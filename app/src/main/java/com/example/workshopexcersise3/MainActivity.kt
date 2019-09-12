@@ -1,6 +1,7 @@
 package com.example.workshopexcersise3
 
 import android.content.Context
+import android.content.Intent
 import android.media.Image
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -21,8 +22,13 @@ import kotlinx.android.synthetic.main.list_item.view.*
 *        /mockData
 *   -Refactor to use fragment for list_item layout
 *    https://developer.android.com/guide/components/fragments
-*   -Refactor initMockData() to just val
+*   -Refactor initMockData() to just val => ArrayListOf?
+*   -Implement showing the images
+*
 */
+
+const val INTENT_ITEM_TITLE = "item_title"
+const val INTENT_ITEM_SUBTITLE = "item_subtitle"
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +36,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val viewManager = LinearLayoutManager(this)
-        val viewAdapter = MyAdapter(this, initMockData())
+        val viewAdapter = MyAdapter(this, initMockData(), object: OnClickItemListener {
+            override fun onItemClick(position: Int, view: View) {
+                val context = view.context
+                val intent = Intent(context, DetailActivity::class.java).apply {
+                    putExtra(ListItem.INTENT_ITEM_TITLE,initMockData()[position].title)
+                    putExtra(ListItem.INTENT_ITEM_SUBTITLE,initMockData()[position].subtitle)
+                }
+                context.startActivity(intent)
+            }
+        })
 
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView).apply {
             this.setHasFixedSize(true)
@@ -39,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
 fun initMockData() : ArrayList<ListItem>{
     val mockData : ArrayList<ListItem> = ArrayList()
 
@@ -69,14 +85,18 @@ fun initMockData() : ArrayList<ListItem>{
     return mockData
 }
 
-
 data class ListItem(
     val image: Image?,
     val title: String,
     val subtitle: String
-)
+){
+    companion object {
+        const val INTENT_ITEM_TITLE = "item_title"
+        const val INTENT_ITEM_SUBTITLE = "item_subtitle"
+    }
+}
 
-class MyAdapter(val context: Context, val items: ArrayList<ListItem>) : RecyclerView.Adapter<MyAdapter.MyViewHolder>(){
+class MyAdapter(val context: Context, val items: ArrayList<ListItem>, val listener: OnClickItemListener) : RecyclerView.Adapter<MyAdapter.MyViewHolder>(){
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         val image: ImageView = itemView.list_item_imageView
         val title: TextView = itemView.list_item_title
@@ -94,5 +114,15 @@ class MyAdapter(val context: Context, val items: ArrayList<ListItem>) : Recycler
         val item = items[position]
         holder.title.text = item.title
         holder.subtitle.text = item.subtitle
+        holder.itemView.setOnClickListener{
+            listener.onItemClick(holder.adapterPosition, it)
+        }
     }
 }
+
+interface OnClickItemListener{
+    fun onItemClick(position: Int, view: View)
+}
+
+
+
