@@ -5,13 +5,22 @@ import android.content.Intent
 import android.media.Image
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.workshopexcersise3.interfaces.IListItemInholland
+import com.example.workshopexcersise3.models.ListItemInholland
 import kotlinx.android.synthetic.main.list_item.view.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
 
 /*
 * TODO:
@@ -20,15 +29,38 @@ import kotlinx.android.synthetic.main.list_item.view.*
 *        /models
 *        /mockData
 *        /interfaces
+*        /dis guide has solid file struc https://medium.com/@prakash_pun/retrofit-a-simple-android-tutorial-48437e4e5a23
 *   -Refactor initMockData() to just val => ArrayListOf?
 *   -Implement showing the images
 */
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), Callback<List<ListItemInholland>> {
+
+    override fun onResponse(
+        call: Call<List<ListItemInholland>>,
+        response: Response<List<ListItemInholland>>
+    ) {
+        if (response.isSuccessful && response.body() != null){
+            Log.e("HTTP", "yo")
+        }
+    }
+
+    override fun onFailure(call: Call<List<ListItemInholland>>, t: Throwable) {
+        Log.e("HTTP", "Could net fetch data", t)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.my_toolbar))
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://inhollandbackend.azurewebsites.net/api/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit.create(IListItemInholland::class.java!!)
+        service.getAllListItems().enqueue(this)
 
         val viewManager = LinearLayoutManager(this)
         val viewAdapter = MyAdapter(this, initMockData(), object: OnClickItemListener {
