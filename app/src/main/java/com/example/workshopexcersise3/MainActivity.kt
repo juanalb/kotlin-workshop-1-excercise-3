@@ -5,11 +5,10 @@ import android.content.Intent
 import android.media.Image
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.list_item.view.*
@@ -20,20 +19,16 @@ import kotlinx.android.synthetic.main.list_item.view.*
 *        /layout/===fragments?===
 *        /models
 *        /mockData
-*   -Refactor to use fragment for list_item layout
-*    https://developer.android.com/guide/components/fragments
+*        /interfaces
 *   -Refactor initMockData() to just val => ArrayListOf?
 *   -Implement showing the images
-*
 */
-
-const val INTENT_ITEM_TITLE = "item_title"
-const val INTENT_ITEM_SUBTITLE = "item_subtitle"
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setSupportActionBar(findViewById(R.id.my_toolbar))
 
         val viewManager = LinearLayoutManager(this)
         val viewAdapter = MyAdapter(this, initMockData(), object: OnClickItemListener {
@@ -51,6 +46,21 @@ class MainActivity : AppCompatActivity() {
             this.setHasFixedSize(true)
             this.layoutManager = viewManager
             this.adapter = viewAdapter
+        }
+    }
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.action_menu_main,menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) : Boolean {
+        return when (item.itemId){
+            R.id.action_refresh -> {
+                //Do something..
+                Toast.makeText(this,"Refresh action selected",Toast.LENGTH_LONG).show()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 }
